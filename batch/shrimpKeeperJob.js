@@ -3,8 +3,9 @@ const request = require('request');
 const shrimpKeeperBot = require('./telegram/shrimpKeeperBot');
 const key = require('../env/key.json');
 const chatId = key["telegram chatId"];
+const serverAddress = key["server ip address"];
 
-const url = 'http://141.164.46.105:3000/upbit';
+const url = serverAddress.concat('/upbit');
 const options = {
     uri: url
 };
@@ -17,6 +18,7 @@ let change_price_rate_three_minute = 0.00;
 let change_price_rate_five_minute = 0.00;
 let change_price_rate_seven_minute = 0.00;
 let change_price_rate_ten_minute = 0.00;
+let cntTicker = "";
 
 
 let task = cron.schedule('*/5 * * * * *', () => {
@@ -31,19 +33,23 @@ let task = cron.schedule('*/5 * * * * *', () => {
 
         /* update db and rate */
         await calcRate(bodyJSON[0].trade_price);
-        console.log("\n==== db");
-        console.log(db);
 
         const sendMsg = "종목: " + bodyJSON[0].market + "\n"
-                        + "기준 시간(한국 시간): " + hh + "시" + mm + "분" + ss + "초\n"
-                        + "현재 가격: " + bodyJSON[0].trade_price + " 원\n"
-                        + "변화율\n"
-                        + "최근 1분 간: " + change_price_rate_a_minute.toFixed(2).toString() + " %\n"
-                        + "최근 3분 간: " + change_price_rate_three_minute.toFixed(2).toString() + " %\n"
-                        + "최근 5분 간: " + change_price_rate_five_minute.toFixed(2).toString() + " %\n"
-                        + "최근 7분 간: " + change_price_rate_seven_minute.toFixed(2).toString() + " %\n"
-                        + "최근 10분 간: " + change_price_rate_ten_minute.toFixed(2).toString() + " %\n"
-                        + "거래량: " + bodyJSON[0].trade_volume + " XRP\n";
+                        + "기준 시간(한국 시간): " + hh + "시 " + mm + "분 " + ss + "초\n\n"
+                        + "현재 가격: " + bodyJSON[0].trade_price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + key.market + "\n"
+                        + "전일대비 : " + (bodyJSON[0].signed_change_rate * 100).toFixed(2).toString() + " %\n"
+                        + "전일 종가: " + bodyJSON[0].opening_price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + key.market + "\n"
+                        + "금일 고가: " + bodyJSON[0].high_price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + key.market + "\n"
+                        + "금일 저가: " + bodyJSON[0].low_price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + key.market + "\n"
+
+                        + "\n단기 변화율\n"
+                        + "최근  1분 간: " + change_price_rate_a_minute.toFixed(2).toString() + " %\n"
+                        + "최근  3분 간: " + change_price_rate_three_minute.toFixed(2).toString() + " %\n"
+                        + "최근  5분 간: " + change_price_rate_five_minute.toFixed(2).toString() + " %\n"
+                        + "최근  7분 간: " + change_price_rate_seven_minute.toFixed(2).toString() + " %\n"
+                        + "최근 10분 간: " + change_price_rate_ten_minute.toFixed(2).toString() + " %\n\n"
+
+                        + "거래량: " + bodyJSON[0].trade_volume + " " + key.ticker + "\n";
         console.log(sendMsg);
 
 
@@ -55,6 +61,13 @@ let task = cron.schedule('*/5 * * * * *', () => {
 
 
 const calcRate = async function( trade_price ) {
+    if ( !cntTicker ) {
+        cntTicker = key["market ticker"];
+    } else if ( cntTicker != key["market ticker"] ) {
+        cntTicker = key["market ticker"];
+        db = [];
+    }
+
     /* update db */
     db[10] = db[9];
     db[9] = db[8];
@@ -77,10 +90,8 @@ const calcRate = async function( trade_price ) {
     change_price_rate_ten_minute = 0;
 
 
-    console.log(db[1]);
     if ( !Number.isNaN(db[1]) ) {
         let val = db[0] - db[1];
-        console.info('chk in 01');
         change_price_rate_a_minute = val == 0 ? 0.00 : (val / db[1]) * 100;
     }
 

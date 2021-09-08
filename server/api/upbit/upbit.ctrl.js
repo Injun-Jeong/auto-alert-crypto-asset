@@ -1,17 +1,18 @@
 const request = require('sync-request');
 const key = require('../../../env/key.json');
-const ticker = key["market ticker"];
 const url = 'https://api.upbit.com/v1/ticker?markets=';
 const options = {method: 'GET', headers: {Accept: 'application/json'}};
-
+let ticker = key["market ticker"];
 
 /** 시세 조회
  * getPrice
  * @param ticker
- * @returns {ticker, price, date}
+ * @returns { ... }
  */
 const getPrice = function(req, res) {
-    console.info("시세 조회 메서드 호출");
+    console.info("업비트 종목 조회 메서드 호출");
+    ticker = key["market ticker"];
+
     const reqTicker = req.query.ticker;
     let urlInfo = url;
 
