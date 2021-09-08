@@ -1,8 +1,6 @@
 
 # Batch: Shrimp-Keeper
 
----
-
 고래 싸움에 새우등 터지지 말고 지키자,,
 
 ⏱️기간: 2021. 09. 08. ~ 2021. 09. 08.
@@ -11,8 +9,6 @@
 
 
 ## Goal
-
----
 
 고래 싸움에 새우등 터지지 말자,,
 
@@ -24,11 +20,7 @@
 
 ## 사용법
 
----
-
 ### 0. (Optional) Cloud Server via Vultr
-
----
 
 - [Vultr 클라우드 서비스](https://www.vultr.com/)를 통해, 새우지킴이 서버를 만든다.
 - 가장 저렴한 옵션으로 설정하는 것을 권장한다. ( 약 5천원 / 월 )
@@ -50,8 +42,6 @@ root@shrimpkeeper:~#
 
 ### 1. ssh 서버에 node 및 npm 설치
 
----
-
 ```bash
 # install Node.js and npm
 > curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
@@ -64,8 +54,6 @@ root@shrimpkeeper:~#
 
 ### 2. intall package
 
----
-
 ```bash
 > git clone https://github.com/Injun-Jeong/shrimp-keeper.git
 > cd shrimp-keeper/
@@ -73,8 +61,6 @@ root@shrimpkeeper:~#
 ```
 
 ### 3. set the file of key.json
-
----
 
 새우지킴이를 실행하기 위한, 설정 값을 `key.json` 파일에 세팅한다.
 
@@ -109,8 +95,6 @@ root@shrimpkeeper:~#
 ```
 
 ### 4. run program
-
----
 
 서버를 실행 시킨 후, 텔레그램 앱에 접속하여 `/on` 명령어를 입력한다.
 
