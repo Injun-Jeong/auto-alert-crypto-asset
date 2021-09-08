@@ -21,7 +21,7 @@ let change_price_rate_ten_minute = 0.00;
 let cntTicker = "";
 
 
-let task = cron.schedule('*/5 * * * * *', () => {
+let task = cron.schedule('*/1 * * * *', () => {
     console.log('\n======================\nrunning a task every 3 seconds\n');
     request(options, async function(err, res, body) {
         const bodyJSON = JSON.parse(body);
@@ -32,7 +32,7 @@ let task = cron.schedule('*/5 * * * * *', () => {
         const ss = bodyJSON[0].trade_time_kst.substr(4,2);
 
         /* update db and rate */
-        await calcRate(bodyJSON[0].trade_price);
+        await calcRate(bodyJSON[0].trade_price);g
 
         const sendMsg = "종목: " + bodyJSON[0].market + "\n"
                         + "기준 시간(한국 시간): " + hh + "시 " + mm + "분 " + ss + "초\n\n"
