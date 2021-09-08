@@ -1,5 +1,8 @@
 {
-  "market ticker": "원하는 ticker를 세팅하세요. ex. KRW-XRP"
-  , "telegram chatId": "telegram chatID를 세팅하세요."
-  , "telegram token": "bot으로 부터 부여받은 telegram access token을 세팅하세요."
+  "market ticker": "krw-xrp",        // 마켓시장단위-티커(잘못 기입하면 안 됩니다.) 
+  "market": "krw",                   // 마켓시장단위
+  "ticker": "xrp",                   // 티커
+  "telegram chatId": "",             // 텔레그램 채팅 아이디
+  "telegram token": "",              // 텔레그램 접근 토큰
+  "server ip address": ""            // 새우지킴이 원격 서버 ip:port 주소
 }
