@@ -10,7 +10,9 @@
     "http": "latest",
     "request": "latest",
     "sync-request": "latest",
-    "node-cron": "latest"
+    "node-cron": "latest",
+    "node-telegram-bot-api": "latest",
+    "events": "latest"
   },
   "license": "MIT",
   "keywords": [
