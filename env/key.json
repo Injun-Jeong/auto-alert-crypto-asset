@@ -1,0 +1,5 @@
+{
+  "market ticker": "원하는 ticker를 세팅하세요. ex. KRW-XRP"
+  , "telegram chatId": "telegram chatID를 세팅하세요."
+  , "telegram token": "bot으로 부터 부여받은 telegram access token을 세팅하세요."
+}
