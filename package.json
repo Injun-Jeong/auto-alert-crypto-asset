@@ -8,7 +8,9 @@
     "ejs": "latest",
     "express": "latest",
     "http": "latest",
-    "sync-request": "latest"
+    "request": "latest",
+    "sync-request": "latest",
+    "node-cron": "latest"
   },
   "license": "MIT",
   "keywords": [
