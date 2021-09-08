@@ -1,0 +1,1 @@
+auto-alert-crypto-asset
