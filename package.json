@@ -1,0 +1,22 @@
+{
+  "name": "auto-alert-crypto-asset",
+  "version": "1.0.0",
+  "description": "auto alert crypto asset system",
+  "main": "./server/server.js",
+  "dependencies": {
+    "body-parser": "latest",
+    "ejs": "latest",
+    "express": "latest",
+    "http": "latest",
+    "sync-request": "latest"
+  },
+  "license": "MIT",
+  "keywords": [
+    "Auto",
+    "Alert",
+    "Kakao",
+    "Upbit",
+    "Crypto Currency",
+    "Crypto Asset"
+  ]
+}
