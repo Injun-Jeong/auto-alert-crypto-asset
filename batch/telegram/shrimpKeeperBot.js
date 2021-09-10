@@ -10,20 +10,20 @@ bot.on('message', (msg) => {
     console.log(msg);
 
     if ( msg.text == "/help" ) {
-        let res = '/on\n   : To start auto alert. (every minute)\n'
-                    + '/off\n   : To stop auto alert.\n'
+        let res = '/on\n   : To start auto-alert. (every minute)\n'
+                    + '/off\n   : To stop auto-alert.\n'
                     + '/ticker=name\n   : To change an other ticker.\n     But, please enter the NAME \n     OF TICKER carefully.\n';
         bot.sendMessage(chatId, res);
     } else if ( msg.text == "/on" ) {
         const options = {
-            uri: url.concat("/batch/on")
+            uri: url.concat(':3000').concat("/batch/on")
         };
         request(options, () => {
             bot.sendMessage(chatId, 'shrimp keeper wakes up..');
         });
     } else if ( msg.text == "/off" ) {
         const options = {
-            uri: url.concat("/batch/off")
+            uri: url.concat(':3000').concat("/batch/off")
         };
         request(options, () => {
             bot.sendMessage(chatId, 'shrimp keeper sleeps..');
