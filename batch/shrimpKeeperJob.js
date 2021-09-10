@@ -9,6 +9,7 @@ let cntTicker = "";
 
 /* db라고 이름 붙이기 민망할 정도,,, */
 let db = [];
+let volDB = [];
 
 /* 단기 변화율 */
 let change_price_rate_a_minute = 0.00;
@@ -24,24 +25,10 @@ let avg_price_five_minute = 0;
 let avg_price_seven_minute = 0;
 let avg_price_ten_minute = 0;
 
-let last_acc_trade_volume = 0;
-
-//todo
-const callLighthouse = function(bodyJSONString) {
-    const bodyJSON = JSON.parse(bodyJSONString);
-
-    const url = serverAddress.concat(':7777/lighthouse');
-    const options = {
-        uri: url,
-        method: 'POST',
-        body: bodyJSON,
-        json: true
-    };
-
-    request(options, function(err, res, body) {
-        console.log(err);
-    });
-}
+/* 거래량 */
+let last_acc_trade_volume = 0;              // 최근 1분 전 거래량
+let last_five_minute_avg_trade_volume = 0;  // 최근 5분 간 평균 거래량
+let last_ten_minute_avg_trade_volume = 0;   // 최근 10분 평균 거래량
 
 
 let task = cron.schedule('*/1 * * * *', () => {
@@ -55,7 +42,7 @@ let task = cron.schedule('*/1 * * * *', () => {
         const bodyJSON = JSON.parse(body);
 
         /* update db and rate */
-        await calcRate(bodyJSON[0].trade_price);
+        await calcRate(bodyJSON[0].trade_price, bodyJSON[0].acc_trade_volume);
 
         /* send message to bot */
         sendMessage(bodyJSON);
@@ -65,7 +52,7 @@ let task = cron.schedule('*/1 * * * *', () => {
 }).start();
 
 
-const calcRate = async function( trade_price ) {
+const calcRate = async function( trade_price, acc_trade_volume ) {
     /* calculate change rate */
     change_price_rate_a_minute = 0;
     change_price_rate_three_minute = 0;
@@ -87,6 +74,7 @@ const calcRate = async function( trade_price ) {
         cntTicker = key["market ticker"];
         db = [];
     }
+
 
     /* update db */
     db[10] = db[9];
@@ -172,6 +160,56 @@ const calcRate = async function( trade_price ) {
         let val = db[0] - db[10];
         change_price_rate_ten_minute = val == 0 ? 0.00 : (val / db[10]) * 100;
     }
+
+
+    /* update the db of volume */
+    last_five_minute_avg_trade_volume = 0;
+    last_ten_minute_avg_trade_volume = 0;
+
+    volDB[10] = volDB[9];
+    last_ten_minute_avg_trade_volume += volDB[10];
+
+    volDB[9] = volDB[8];
+    last_ten_minute_avg_trade_volume += volDB[9];
+
+    volDB[8] = volDB[7];
+    last_ten_minute_avg_trade_volume += volDB[8];
+
+    volDB[7] = volDB[6];
+    last_ten_minute_avg_trade_volume += volDB[7];
+
+    volDB[6] = volDB[5];
+    last_ten_minute_avg_trade_volume += volDB[6];
+
+    volDB[5] = volDB[4];
+    last_ten_minute_avg_trade_volume += volDB[5];
+    last_five_minute_avg_trade_volume += volDB[5];
+
+    volDB[4] = volDB[3];
+    last_ten_minute_avg_trade_volume += volDB[4];
+    last_five_minute_avg_trade_volume += volDB[4];
+
+    volDB[3] = volDB[2];
+    last_ten_minute_avg_trade_volume += volDB[3];
+    last_five_minute_avg_trade_volume += volDB[3];
+
+    volDB[2] = volDB[1];
+    last_ten_minute_avg_trade_volume += volDB[2];
+    last_five_minute_avg_trade_volume += volDB[2];
+
+    volDB[1] = volDB[0];
+    last_ten_minute_avg_trade_volume += volDB[1];
+    last_five_minute_avg_trade_volume += volDB[1];
+
+    volDB[0] = acc_trade_volume - last_acc_trade_volume;
+    last_ten_minute_avg_trade_volume += volDB[0];
+    last_five_minute_avg_trade_volume += volDB[0];
+
+    /* update avg trade volume */
+    last_five_minute_avg_trade_volume /= 6;
+    last_ten_minute_avg_trade_volume /= 11;
+
+    last_acc_trade_volume = acc_trade_volume;
 }
 
 
@@ -203,37 +241,62 @@ const sendMessage = function(bodyJSON) {
         + "최근  7분 간: " + ((bodyJSON[0].trade_price - avg_price_seven_minute).toFixed(2) / avg_price_seven_minute * 100).toFixed(2).toString() + " %\n"
         + "최근 10분 간: " + ((bodyJSON[0].trade_price - avg_price_ten_minute).toFixed(2) / avg_price_ten_minute * 100).toFixed(2).toString() + " %\n"
 
+        + "\n단기 평균 거래량\n"
+        + "최근 5분 간: " + last_five_minute_avg_trade_volume.toFixed(0).toString().toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + key.ticker + "\n"
+        + "최근 10분 간: " + last_ten_minute_avg_trade_volume.toFixed(0).toString().toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + key.ticker + "\n"
+
         + "\n현재 가격: " + bodyJSON[0].trade_price.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + key.market + "\n"
-        + "거래량: " + (bodyJSON[0].acc_trade_volume - last_acc_trade_volume).toFixed(0).toString().toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + key.ticker + "\n"
-        + "거래액: " + ( avg_price_a_minute.toFixed(0) * (bodyJSON[0].acc_trade_volume - last_acc_trade_volume).toFixed(0) )
+        + "거래량: " + volDB[0].toFixed(0).toString().toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + key.ticker + "\n"
+        + "거래액: " + ( avg_price_a_minute.toFixed(0) * volDB[0].toFixed(0) )
                                         .toFixed(0).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,') + " " + key.market + "\n";
 
 
     const lighthouseJSON = {
         bodyJSON: bodyJSON[0],
-        "change_price_rate_a_minute": change_price_rate_a_minute,
-        "change_price_rate_three_minute": change_price_rate_three_minute,
-        "change_price_rate_five_minute": change_price_rate_five_minute,
-        "change_price_rate_seven_minute": change_price_rate_seven_minute,
-        "change_price_rate_ten_minute": change_price_rate_ten_minute,
+
+        "change_price_rate_a_minute": change_price_rate_a_minute.toFixed(2),
+        "change_price_rate_three_minute": change_price_rate_three_minute.toFixed(2),
+        "change_price_rate_five_minute": change_price_rate_five_minute.toFixed(2),
+        "change_price_rate_seven_minute": change_price_rate_seven_minute.toFixed(2),
+        "change_price_rate_ten_minute": change_price_rate_ten_minute.toFixed(2),
+
         "avg_price_a_minute_rate": ((bodyJSON[0].trade_price - avg_price_a_minute).toFixed(2) / avg_price_a_minute * 100).toFixed(2),
         "avg_price_three_minute_rate": ((bodyJSON[0].trade_price - avg_price_three_minute).toFixed(2) / avg_price_three_minute * 100).toFixed(2),
         "avg_price_five_minute_rate": ((bodyJSON[0].trade_price - avg_price_five_minute).toFixed(2) / avg_price_five_minute * 100).toFixed(2),
         "avg_price_seven_minute_rate": ((bodyJSON[0].trade_price - avg_price_seven_minute).toFixed(2) / avg_price_seven_minute * 100).toFixed(2),
         "avg_price_ten_minute_rate": ((bodyJSON[0].trade_price - avg_price_ten_minute).toFixed(2) / avg_price_ten_minute * 100).toFixed(2),
-        "trade_volume":  (bodyJSON[0].acc_trade_volume - last_acc_trade_volume).toFixed(0),
-        "trade_price": ( avg_price_a_minute.toFixed(0) * (bodyJSON[0].acc_trade_volume - last_acc_trade_volume).toFixed(0) ).toFixed(0)
+
+        "last_five_minute_avg_trade_volume": last_five_minute_avg_trade_volume.toFixed(0),
+        "last_ten_minute_avg_trade_volume": last_ten_minute_avg_trade_volume.toFixed(0),
+
+        "trade_volume":  volDB[0].toFixed(0),
+        "trade_price": ( avg_price_a_minute.toFixed(0) * volDB[0].toFixed(0) ).toFixed(0)
     };
 
     /* call lighthouse */
     callLighthouse(JSON.stringify(lighthouseJSON));
 
-    last_acc_trade_volume = bodyJSON[0].acc_trade_volume;
-
     console.log(sendMsg);
     if ( key["shrimp keeper mode"] == "on" ) {
         shrimpKeeperBot.sendMessage(chatId, sendMsg);
     }
+}
+
+
+const callLighthouse = function(bodyJSONString) {
+    const bodyJSON = JSON.parse(bodyJSONString);
+
+    const url = serverAddress.concat(':7777/lighthouse');
+    const options = {
+        uri: url,
+        method: 'POST',
+        body: bodyJSON,
+        json: true
+    };
+
+    request(options, function(err, res, body) {
+        console.log(err);
+    });
 }
 
 
